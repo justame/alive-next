@@ -190,7 +190,7 @@ export async function POST(request: Request) {
     console.error("Check activity error:", error);
     return NextResponse.json(
       { error: "Failed to check activity" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }
