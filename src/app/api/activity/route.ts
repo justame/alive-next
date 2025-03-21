@@ -116,6 +116,7 @@ export async function POST(request: Request) {
     return NextResponse.json(newActivity);
   } catch (error: any) {
     console.error("Update activity error:", error);
+
     return NextResponse.json(
       { error: "Failed to update activity" },
       { status: error.message?.includes("authorization") ? 401 : 500 }

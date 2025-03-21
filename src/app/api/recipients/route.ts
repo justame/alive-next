@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     console.error("Get recipients error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipients" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }
