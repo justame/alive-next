@@ -165,7 +165,7 @@ function calculateTotals(results: UserNotificationResult[]) {
 // Main endpoint handler
 export async function GET() {
   try {
-    const thresholdHours = Number(process.env.INACTIVITY_THRESHOLD_HOURS) || 18;
+    const thresholdHours = Number(process.env.INACTIVITY_THRESHOLD_HOURS) || 8;
     const thresholdMs = thresholdHours * 60 * 60 * 1000;
     console.log("Threshold hours:", thresholdHours);
     // Get inactive users
