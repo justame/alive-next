@@ -12,28 +12,6 @@ async function verifySession(request: Request) {
   return await auth.verifyIdToken(sessionToken);
 }
 
-async function resetRecipientsNotificationStatus(userId: string) {
-  try {
-    const recipientsSnapshot = await db
-      .collection("recipients")
-      .where("userId", "==", userId)
-      .get();
-
-    const resetPromises = recipientsSnapshot.docs.map((doc) =>
-      doc.ref.update({
-        notifiedForCurrentInactivity: false,
-      })
-    );
-
-    await Promise.all(resetPromises);
-    console.log(
-      `Reset notification status for ${recipientsSnapshot.size} recipients of user ${userId}`
-    );
-  } catch (error) {
-    console.error("Failed to reset recipient notification status:", error);
-  }
-}
-
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Sets duration to 60 seconds
 
@@ -109,9 +87,6 @@ export async function POST(request: Request) {
 
     // Update user's activities in Firestore
     await activityRef.set({ activities }, { merge: true });
-
-    // Reset notification status when user becomes active
-    await resetRecipientsNotificationStatus(decodedToken.uid);
 
     return NextResponse.json(newActivity);
   } catch (error: any) {

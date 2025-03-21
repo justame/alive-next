@@ -51,21 +51,24 @@ async function getInactiveUsers(thresholdMs: number) {
 
 async function sendNotification(
   recipient: any,
-  message: string
+  message: string,
+  lastActivityTimestamp: string | null
 ): Promise<NotificationResult> {
   try {
-    const now = new Date();
     const recipientRef = db.collection("recipients").doc(recipient.id);
     const recipientDoc = await recipientRef.get();
     const recipientData = recipientDoc.data();
 
-    // Check if already notified for current inactivity period
-    if (recipientData?.notifiedForCurrentInactivity) {
+    // Check if already notified for current activity timestamp
+    if (
+      lastActivityTimestamp &&
+      recipientData?.lastNotifiedActivityTimestamp === lastActivityTimestamp
+    ) {
       return {
         recipientId: recipient.id,
         status: "skipped",
         phoneNumber: recipient.phoneNumber,
-        error: "Already notified for this inactivity period",
+        error: "Already notified for this activity timestamp",
       };
     }
 
@@ -75,9 +78,9 @@ async function sendNotification(
       from: process.env.TWILIO_PHONE_NUMBER,
     });
 
-    // Mark as notified for this inactivity period
+    // Update the last notified activity timestamp
     await recipientRef.update({
-      notifiedForCurrentInactivity: true,
+      lastNotifiedActivityTimestamp: lastActivityTimestamp,
     });
 
     return {
@@ -131,7 +134,11 @@ async function processInactiveUser(
         lastActivity?.location || null,
         recipientData.name
       );
-      return sendNotification(recipientData, message);
+      return sendNotification(
+        recipientData,
+        message,
+        lastActivity?.timestamp || null
+      );
     })
   );
 
