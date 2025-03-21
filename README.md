@@ -1,4 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# Alive Next.js App
+
+## Environment Variables
+
+The application requires the following environment variables to be set:
+
+```bash
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour Private Key\n-----END PRIVATE KEY-----"
+FIREBASE_CLIENT_EMAIL=your-service-account-email
+```
+
+### Local Development
+1. Create a `.env.local` file in the root directory
+2. Add the above environment variables with your Firebase service account values
+3. Make sure to keep `.env.local` in `.gitignore` and never commit it
+
+### Production Deployment
+1. Set these environment variables in your hosting platform (e.g., Vercel)
+2. For the `FIREBASE_PRIVATE_KEY`, make sure to paste the entire key including newlines
 
 ## Getting Started
 

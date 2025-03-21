@@ -1,0 +1,400 @@
+{
+  "info": {
+    "name": "Alive Next API",
+    "description": "Collection for the Alive Next application API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Activity",
+      "item": [
+        {
+          "name": "Get User Activities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/activity",
+              "host": ["{{base_url}}"],
+              "path": ["api", "activity"]
+            },
+            "description": "Retrieves the list of activities for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{session_token}}",
+                    "type": "text"
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "body": [
+                {
+                  "location": {
+                    "lat": 37.7749,
+                    "lng": -122.4194
+                  },
+                  "motionStatus": "walking",
+                  "timestamp": "2024-03-20T15:00:00Z"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Record Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": \"37.7749,-122.4194\",\n  \"motionStatus\": \"walking\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/activity",
+              "host": ["{{base_url}}"],
+              "path": ["api", "activity"]
+            },
+            "description": "Records a new activity for the authenticated user.\n\nRequired fields:\n- location: String in format 'latitude,longitude'\n- motionStatus: String describing the user's motion state"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipients",
+      "item": [
+        {
+          "name": "List Recipients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recipients",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recipients"]
+            },
+            "description": "Retrieves all recipients associated with the authenticated user."
+          }
+        },
+        {
+          "name": "Create Recipient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"phoneNumber\": \"+1234567890\",\n  \"email\": \"john@example.com\",\n  \"relationship\": \"Family\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/recipients",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recipients"]
+            },
+            "description": "Creates a new recipient for the authenticated user.\n\nRequired fields:\n- name: Recipient's full name\n- phoneNumber: Valid phone number\n- email: Valid email address\n- relationship: Relationship to the user"
+          }
+        },
+        {
+          "name": "Get Recipient",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recipients/{{recipient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recipients", "{{recipient_id}}"]
+            },
+            "description": "Retrieves details of a specific recipient."
+          }
+        },
+        {
+          "name": "Update Recipient",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"phoneNumber\": \"+1234567890\",\n  \"email\": \"john.updated@example.com\",\n  \"relationship\": \"Family\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/recipients/{{recipient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recipients", "{{recipient_id}}"]
+            },
+            "description": "Updates an existing recipient's information."
+          }
+        },
+        {
+          "name": "Delete Recipient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/recipients/{{recipient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recipients", "{{recipient_id}}"]
+            },
+            "description": "Deletes a recipient from the system."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_id_token}}",
+                "type": "text",
+                "description": "Firebase ID token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/create-session",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "create-session"]
+            },
+            "description": "Creates a new session token valid for 1 year using Firebase ID token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{firebase_id_token}}",
+                    "type": "text"
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "body": {
+                "token": "custom_session_token"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Activity Monitoring",
+      "item": [
+        {
+          "name": "Check User Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{session_token}}",
+                "type": "text",
+                "description": "Firebase authentication session token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/check-activity",
+              "host": ["{{base_url}}"],
+              "path": ["api", "check-activity"]
+            },
+            "description": "Checks for inactive users and sends notifications to their designated recipients.\n\nThis endpoint:\n1. Verifies the session token\n2. Identifies users who haven't shown activity within the threshold period (default 24 hours)\n3. Sends SMS notifications to registered recipients for each inactive user\n4. Returns detailed results of the notification process\n\nRequired Environment Variables:\n- INACTIVITY_THRESHOLD_HOURS: Number of hours for inactivity threshold\n- TWILIO_PHONE_NUMBER: The Twilio phone number for sending SMS"
+          },
+          "response": [
+            {
+              "name": "Success - Inactive Users Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{session_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/check-activity"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": {
+                "message": "Processed 2 inactive users. Successfully sent 3 out of 4 notifications.",
+                "results": [
+                  {
+                    "userId": "user123",
+                    "userName": "John Doe",
+                    "lastActivity": {
+                      "timestamp": "2024-03-20T10:00:00Z",
+                      "location": "Home"
+                    },
+                    "notifications": [
+                      {
+                        "recipientId": "recipient1",
+                        "status": "success",
+                        "phoneNumber": "+1234567890"
+                      },
+                      {
+                        "recipientId": "recipient2",
+                        "status": "failed",
+                        "phoneNumber": "+0987654321",
+                        "error": "Invalid phone number"
+                      }
+                    ],
+                    "successCount": 1,
+                    "totalRecipients": 2
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Success - No Inactive Users",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{session_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/check-activity"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": {
+                "message": "No inactive users found",
+                "status": "success"
+              }
+            },
+            {
+              "name": "Error - Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer invalid_token",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/check-activity"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": {
+                "error": "Failed to check activity"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL of the API (change according to environment)"
+    },
+    {
+      "key": "session_token",
+      "value": "your_firebase_session_token",
+      "type": "string",
+      "description": "Firebase authentication session token"
+    },
+    {
+      "key": "firebase_id_token",
+      "value": "your_firebase_id_token",
+      "type": "string",
+      "description": "Firebase ID token for initial authentication"
+    },
+    {
+      "key": "recipient_id",
+      "value": "recipient_document_id",
+      "type": "string",
+      "description": "ID of the recipient document in Firestore"
+    }
+  ]
+} 

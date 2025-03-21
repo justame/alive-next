@@ -12,6 +12,53 @@ async function verifySession(request: Request) {
   return await auth.verifyIdToken(sessionToken);
 }
 
+async function resetRecipientsNotificationStatus(userId: string) {
+  try {
+    const recipientsSnapshot = await db
+      .collection("recipients")
+      .where("userId", "==", userId)
+      .get();
+
+    const resetPromises = recipientsSnapshot.docs.map((doc) =>
+      doc.ref.update({
+        notifiedForCurrentInactivity: false,
+      })
+    );
+
+    await Promise.all(resetPromises);
+    console.log(
+      `Reset notification status for ${recipientsSnapshot.size} recipients of user ${userId}`
+    );
+  } catch (error) {
+    console.error("Failed to reset recipient notification status:", error);
+  }
+}
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Sets duration to 60 seconds
+
+export async function GET(request: Request) {
+  try {
+    const decodedToken = await verifySession(request);
+
+    const activityDoc = await db
+      .collection("userActivity")
+      .doc(decodedToken.uid)
+      .get();
+    const activities = activityDoc.exists
+      ? activityDoc.data()?.activities || []
+      : [];
+
+    return NextResponse.json(activities);
+  } catch (error: any) {
+    console.error("Get activities error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch activities" },
+      { status: error.message?.includes("authorization") ? 401 : 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const decodedToken = await verifySession(request);
@@ -45,17 +92,28 @@ export async function POST(request: Request) {
       );
     }
 
-    const activityData = {
-      userId: decodedToken.uid,
+    const newActivity = {
       location: coordinates,
       motionStatus: data.motionStatus,
       timestamp: new Date().toISOString(),
     };
 
-    // Update user's activity in Firestore
-    await db.collection("userActivity").doc(decodedToken.uid).set(activityData);
+    // Get current activities and add the new one
+    const activityRef = db.collection("userActivity").doc(decodedToken.uid);
+    const activityDoc = await activityRef.get();
 
-    return NextResponse.json(activityData);
+    let activities = activityDoc.exists
+      ? activityDoc.data()?.activities || []
+      : [];
+    activities = [newActivity, ...activities].slice(0, 10); // Keep only last 10 activities
+
+    // Update user's activities in Firestore
+    await activityRef.set({ activities }, { merge: true });
+
+    // Reset notification status when user becomes active
+    await resetRecipientsNotificationStatus(decodedToken.uid);
+
+    return NextResponse.json(newActivity);
   } catch (error: any) {
     console.error("Update activity error:", error);
     return NextResponse.json(

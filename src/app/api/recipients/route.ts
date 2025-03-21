@@ -38,8 +38,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    console.log("Creating recipient...");
     const decodedToken = await verifySession(request);
     const data = await request.json();
+    console.log("Recipient data:", data);
 
     // Validate required fields
     const requiredFields = ["name", "phoneNumber", "email", "relationship"];
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
     };
 
     const docRef = await db.collection("recipients").add(recipientData);
+    console.log("Recipient created with ID:", docRef.id);
 
     return NextResponse.json(
       {
