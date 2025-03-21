@@ -8,11 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "firebase-admin": "^13.2.0",
     "next": "15.2.3"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
-    "@types/react": "^19"
+    "@types/react": "^19",
+    "typescript": "^5"
   }
 }
