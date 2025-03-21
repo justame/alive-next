@@ -165,7 +165,7 @@ function calculateTotals(results: UserNotificationResult[]) {
 // Main endpoint handler
 export async function POST(request: Request) {
   try {
-    await verifySession(request);
+    // await verifySession(request);
 
     const thresholdHours = Number(process.env.INACTIVITY_THRESHOLD_HOURS) || 18;
     const thresholdMs = thresholdHours * 60 * 60 * 1000;
