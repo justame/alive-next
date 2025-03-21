@@ -14,13 +14,14 @@ async function verifySession(request: Request) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { recipientId: string } }
+  { params }: { params: Promise<{ recipientId: string }> }
 ) {
   try {
     const decodedToken = await verifySession(request);
+    const { recipientId } = await params;
     const recipientDoc = await db
       .collection("recipients")
-      .doc(params.recipientId)
+      .doc(recipientId)
       .get();
 
     if (!recipientDoc.exists) {
@@ -53,12 +54,13 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { recipientId: string } }
+  { params }: { params: Promise<{ recipientId: string }> }
 ) {
   try {
     const decodedToken = await verifySession(request);
+    const { recipientId } = await params;
     const data = await request.json();
-    const recipientRef = db.collection("recipients").doc(params.recipientId);
+    const recipientRef = db.collection("recipients").doc(recipientId);
     const recipientDoc = await recipientRef.get();
 
     if (!recipientDoc.exists) {
@@ -99,11 +101,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { recipientId: string } }
+  { params }: { params: Promise<{ recipientId: string }> }
 ) {
   try {
     const decodedToken = await verifySession(request);
-    const recipientRef = db.collection("recipients").doc(params.recipientId);
+    const { recipientId } = await params;
+    const recipientRef = db.collection("recipients").doc(recipientId);
     const recipientDoc = await recipientRef.get();
 
     if (!recipientDoc.exists) {
