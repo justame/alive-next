@@ -9,6 +9,8 @@ export enum MotionStatus {
   MOVING = "moving",
   STATIONARY = "stationary",
   UNKNOWN = "unknown",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export const ACTIVE_MOTION_STATUSES = [
@@ -16,4 +18,5 @@ export const ACTIVE_MOTION_STATUSES = [
   MotionStatus.RUNNING,
   MotionStatus.MOVING,
   MotionStatus.UNKNOWN,
+  MotionStatus.ACTIVE,
 ] as const;

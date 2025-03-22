@@ -10,6 +10,8 @@ export type LocationDto = z.infer<typeof locationSchema>;
 export const locationStringSchema = z
   .string()
   .regex(
-    /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/,
-    'Location must be in format "latitude,longitude"'
-  );
+    /^(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?)?$/,
+    'Location must be empty or in format "latitude,longitude"'
+  )
+  .nullable()
+  .optional();
