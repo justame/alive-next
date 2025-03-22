@@ -47,7 +47,7 @@ export async function GET(
     console.error("Get recipient error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipient" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }
@@ -94,7 +94,7 @@ export async function PATCH(
     console.error("Update recipient error:", error);
     return NextResponse.json(
       { error: "Failed to update recipient" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }
@@ -131,7 +131,7 @@ export async function DELETE(
     console.error("Delete recipient error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipient" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }

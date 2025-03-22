@@ -74,7 +74,52 @@ export async function POST(request: Request) {
     console.error("Create recipient error:", error);
     return NextResponse.json(
       { error: "Failed to create recipient" },
-      { status: error.message?.includes("authorization") ? 401 : 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const decodedToken = await verifySession(request);
+    const { searchParams } = new URL(request.url);
+    const recipientId = searchParams.get("id");
+
+    if (!recipientId) {
+      return NextResponse.json(
+        { error: "Recipient ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the recipient belongs to the user before deleting
+    const recipientDoc = await db
+      .collection("recipients")
+      .doc(recipientId)
+      .get();
+
+    if (!recipientDoc.exists) {
+      return NextResponse.json(
+        { error: "Recipient not found" },
+        { status: 404 }
+      );
+    }
+
+    if (recipientDoc.data()?.userId !== decodedToken.uid) {
+      return NextResponse.json(
+        { error: "Unauthorized to delete this recipient" },
+        { status: 403 }
+      );
+    }
+
+    await db.collection("recipients").doc(recipientId).delete();
+
+    return NextResponse.json({ message: "Recipient deleted successfully" });
+  } catch (error: any) {
+    console.error("Delete recipient error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete recipient" },
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }

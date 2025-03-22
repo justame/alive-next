@@ -200,11 +200,17 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/recipients/{{recipient_id}}",
+              "raw": "{{base_url}}/api/recipients?id={{recipient_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "recipients", "{{recipient_id}}"]
+              "path": ["api", "recipients"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{recipient_id}}"
+                }
+              ]
             },
-            "description": "Deletes a recipient from the system."
+            "description": "Deletes a recipient from the system. Requires the recipient ID as a query parameter."
           }
         }
       ]
