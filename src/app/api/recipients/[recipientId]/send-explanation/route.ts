@@ -1,18 +1,17 @@
-import { NextResponse } from "next/server";
+import { verifySession } from "@/middleware/auth";
+import { NextRequest, NextResponse } from "next/server";
 import { auth, db } from "../../../../lib/firebase-admin";
 import { twilioClient } from "../../../../lib/twilio";
 
 export async function POST(
-  request: Request,
-  { params }: { params: { recipientId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ recipientId: string }> }
 ) {
   try {
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const decodedToken = await verifySession(request);
+    const userId = decodedToken.uid;
 
-    const { recipientId } = params;
+    const { recipientId } = await params;
 
     // Verify recipient exists and belongs to user
     const recipientRef = db.collection("recipients").doc(recipientId);
@@ -71,7 +70,7 @@ No action needed from you now. You'll only receive messages if needed. Reply STO
     console.error("Send explanation message error:", error);
     return NextResponse.json(
       { error: "Failed to send explanation message" },
-      { status: 500 }
+      { status: error.message?.includes("auth") ? 401 : 500 }
     );
   }
 }
