@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Get activities error:", error);
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
     }
     return NextResponse.json(
       { error: "Failed to fetch activities" },
@@ -50,7 +53,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
     }
 
     return NextResponse.json(

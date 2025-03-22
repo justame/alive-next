@@ -3,9 +3,12 @@ import { DecodedIdToken } from "firebase-admin/auth";
 import { NextRequest } from "next/server";
 
 export class AuthError extends Error {
-  constructor(message: string) {
+  statusCode: number;
+
+  constructor(message: string, statusCode: number = 401) {
     super(message);
     this.name = "AuthError";
+    this.statusCode = statusCode;
   }
 }
 

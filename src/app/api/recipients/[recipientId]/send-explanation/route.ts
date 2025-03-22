@@ -1,4 +1,4 @@
-import { verifySession } from "@/middleware/auth";
+import { AuthError, verifySession } from "@/middleware/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { auth, db } from "../../../../lib/firebase-admin";
 import { twilioClient } from "../../../../lib/twilio";
@@ -68,9 +68,15 @@ No action needed from you now. You'll only receive messages if needed. Reply STO
     });
   } catch (error: any) {
     console.error("Send explanation message error:", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to send explanation message" },
-      { status: error.message?.includes("auth") ? 401 : 500 }
+      { status: 500 }
     );
   }
 }

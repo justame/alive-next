@@ -1,4 +1,4 @@
-import { verifySession } from "@/middleware/auth";
+import { AuthError, verifySession } from "@/middleware/auth";
 import { NextResponse } from "next/server";
 import { db } from "../../lib/firebase-admin";
 
@@ -19,9 +19,15 @@ export async function GET(request: Request) {
     return NextResponse.json(recipients);
   } catch (error: any) {
     console.error("Get recipients error:", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to fetch recipients" },
-      { status: error.message?.includes("auth") ? 401 : 500 }
+      { status: 500 }
     );
   }
 }
@@ -64,9 +70,15 @@ export async function POST(request: Request) {
     );
   } catch (error: any) {
     console.error("Create recipient error:", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to create recipient" },
-      { status: error.message?.includes("auth") ? 401 : 500 }
+      { status: 500 }
     );
   }
 }
@@ -109,9 +121,15 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Recipient deleted successfully" });
   } catch (error: any) {
     console.error("Delete recipient error:", error);
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to delete recipient" },
-      { status: error.message?.includes("auth") ? 401 : 500 }
+      { status: 500 }
     );
   }
 }
