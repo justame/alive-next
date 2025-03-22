@@ -10,7 +10,7 @@ export class AuthError extends Error {
 }
 
 export async function verifySession(
-  request: NextRequest
+  request: Request | NextRequest
 ): Promise<DecodedIdToken> {
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {

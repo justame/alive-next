@@ -1,16 +1,6 @@
+import { verifySession } from "@/middleware/auth";
 import { NextResponse } from "next/server";
-import { auth, db } from "../../lib/firebase-admin";
-
-// Middleware to verify session token
-async function verifySession(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("Missing or invalid authorization header");
-  }
-
-  const sessionToken = authHeader.split("Bearer ")[1];
-  return await auth.verifyIdToken(sessionToken);
-}
+import { db } from "../../lib/firebase-admin";
 
 export async function GET(request: Request) {
   try {
