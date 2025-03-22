@@ -30,22 +30,53 @@ interface UserNotificationResult {
   totalRecipients: number;
 }
 
+interface Activity {
+  timestamp: string;
+  location: { lat: number; lng: number };
+  motionStatus: string;
+}
+
 // Helper functions
 async function getInactiveUsers(thresholdMs: number) {
   const now = new Date();
   const activitySnapshot = await db.collection("userActivity").get();
 
   return activitySnapshot.docs.filter((doc) => {
-    const activities = doc.data()?.activities || [];
+    const data = doc.data();
+    const activities = data?.activities || [];
+    const lastActiveState = data?.lastActiveState;
+
+    // If no activities and no lastActiveState, user is inactive
+    if (activities.length === 0 && !lastActiveState) return true;
+
+    // If we have a lastActiveState, use that to determine inactivity
+    if (lastActiveState) {
+      const lastActiveTime = new Date(lastActiveState.timestamp);
+      return now.getTime() - lastActiveTime.getTime() > thresholdMs;
+    }
+
+    // Fallback to checking recent activities (for users without lastActiveState yet)
     const lastActivity = activities[0];
     const lastActivityTime = lastActivity
       ? new Date(lastActivity.timestamp)
       : null;
 
-    return (
+    if (
       !lastActivityTime ||
       now.getTime() - lastActivityTime.getTime() > thresholdMs
-    );
+    ) {
+      const recentActivities = activities.slice(0, 3);
+      const activeStatuses = ["walking", "running", "moving", "unknown"];
+
+      const hasRecentActiveMotion = recentActivities.some(
+        (activity: Activity) =>
+          activeStatuses.includes(activity.motionStatus?.toLowerCase())
+      );
+
+      return !hasRecentActiveMotion;
+    }
+
+    return false;
   });
 }
 

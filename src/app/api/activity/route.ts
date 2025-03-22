@@ -85,8 +85,22 @@ export async function POST(request: Request) {
       : [];
     activities = [newActivity, ...activities].slice(0, 10); // Keep only last 10 activities
 
+    // Check if this is an active motion status
+    const activeStatuses = ["walking", "running", "moving", "unknown"];
+    const isActiveMotion = activeStatuses.includes(
+      data.motionStatus.toLowerCase()
+    );
+
+    // Prepare update data
+    const updateData: any = { activities };
+
+    // If this is an active motion, update lastActiveState
+    if (isActiveMotion) {
+      updateData.lastActiveState = newActivity;
+    }
+
     // Update user's activities in Firestore
-    await activityRef.set({ activities }, { merge: true });
+    await activityRef.set(updateData, { merge: true });
 
     return NextResponse.json(newActivity);
   } catch (error: any) {
