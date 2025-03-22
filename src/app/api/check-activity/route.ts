@@ -1,5 +1,6 @@
 import { auth, db } from "@/app/lib/firebase-admin";
 import { formatInactivityMessage, twilioClient } from "@/app/lib/twilio";
+import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 // Middleware to verify session token
@@ -31,14 +32,14 @@ interface UserNotificationResult {
 }
 
 interface Activity {
-  timestamp: string;
+  timestamp: Timestamp;
   location: { lat: number; lng: number };
   motionStatus: string;
 }
 
 // Helper functions
 async function getInactiveUsers(thresholdMs: number) {
-  const now = new Date();
+  const now = Timestamp.now();
   const activitySnapshot = await db.collection("userActivity").get();
 
   return activitySnapshot.docs.filter((doc) => {
@@ -51,22 +52,20 @@ async function getInactiveUsers(thresholdMs: number) {
 
     // If we have a lastActiveState, use that to determine inactivity
     if (lastActiveState) {
-      const lastActiveTime = new Date(lastActiveState.timestamp);
-      return now.getTime() - lastActiveTime.getTime() > thresholdMs;
+      const lastActiveTime = lastActiveState.timestamp;
+      return now.toMillis() - lastActiveTime.toMillis() > thresholdMs;
     }
 
     // Fallback to checking recent activities (for users without lastActiveState yet)
     const lastActivity = activities[0];
-    const lastActivityTime = lastActivity
-      ? new Date(lastActivity.timestamp)
-      : null;
+    const lastActivityTime = lastActivity ? lastActivity.timestamp : null;
 
     if (
       !lastActivityTime ||
-      now.getTime() - lastActivityTime.getTime() > thresholdMs
+      now.toMillis() - lastActivityTime.toMillis() > thresholdMs
     ) {
       const recentActivities = activities.slice(0, 3);
-      const activeStatuses = ["walking", "running", "moving", "unknown"];
+      const activeStatuses = ["walking", "running", "moving"];
 
       const hasRecentActiveMotion = recentActivities.some(
         (activity: Activity) =>
@@ -83,7 +82,7 @@ async function getInactiveUsers(thresholdMs: number) {
 async function sendNotification(
   recipient: any,
   message: string,
-  lastActivityTimestamp: string | null
+  lastActivityTimestamp: Timestamp | null
 ): Promise<NotificationResult> {
   try {
     const recipientRef = db.collection("recipients").doc(recipient.id);
@@ -93,7 +92,8 @@ async function sendNotification(
     // Check if already notified for current activity timestamp
     if (
       lastActivityTimestamp &&
-      recipientData?.lastNotifiedActivityTimestamp === lastActivityTimestamp
+      recipientData?.lastNotifiedActivityTimestamp &&
+      lastActivityTimestamp.isEqual(recipientData.lastNotifiedActivityTimestamp)
     ) {
       return {
         recipientId: recipient.id,
@@ -134,8 +134,10 @@ async function processInactiveUser(
   activityDoc: any
 ): Promise<UserNotificationResult> {
   const userId = activityDoc.id;
-  const activities = activityDoc.data()?.activities || [];
+  const data = activityDoc.data();
+  const activities = data?.activities || [];
   const lastActivity = activities[0];
+  const lastActiveState = data?.lastActiveState;
 
   // Fetch user data and recipients in parallel
   const [user, recipientsSnapshot] = await Promise.all([
@@ -156,27 +158,28 @@ async function processInactiveUser(
     };
   }
 
+  // Use lastActiveState timestamp if available, otherwise fallback to lastActivity
+  const activityToUse = lastActiveState || lastActivity;
+  const timestamp = activityToUse?.timestamp || null;
+  const location = activityToUse?.location || null;
+
   const notifications = await Promise.all(
     recipientsSnapshot.docs.map((doc) => {
       const recipientData = doc.data();
       const message = formatInactivityMessage(
         userName,
-        lastActivity?.timestamp || null,
-        lastActivity?.location || null,
+        timestamp,
+        location,
         recipientData.name
       );
-      return sendNotification(
-        recipientData,
-        message,
-        lastActivity?.timestamp || null
-      );
+      return sendNotification(recipientData, message, timestamp);
     })
   );
 
   return {
     userId,
     userName,
-    lastActivity: lastActivity || null,
+    lastActivity: activityToUse || null,
     notifications,
     successCount: notifications.filter((n) => n.status === "success").length,
     totalRecipients: notifications.length,

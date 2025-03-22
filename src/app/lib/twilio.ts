@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import twilio from "twilio";
 
 if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
@@ -11,12 +12,12 @@ export const twilioClient = twilio(
 
 export function formatInactivityMessage(
   userName: string,
-  timestamp: string | null,
+  timestamp: Timestamp | null,
   location: any | null,
   recipientName: string
 ): string {
   const timeString = timestamp
-    ? new Date(timestamp).toLocaleString("en-US", {
+    ? new Date(timestamp.toMillis()).toLocaleString("en-US", {
         month: "numeric",
         day: "numeric",
         hour: "numeric",

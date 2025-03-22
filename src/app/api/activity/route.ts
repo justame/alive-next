@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { auth, db } from "../../lib/firebase-admin";
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
     const newActivity = {
       location: coordinates,
       motionStatus: data.motionStatus,
-      timestamp: new Date().toISOString(),
+      timestamp: Timestamp.now(),
     };
 
     // Get current activities and add the new one
