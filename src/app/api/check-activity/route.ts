@@ -3,17 +3,6 @@ import { formatInactivityMessage, twilioClient } from "@/app/lib/twilio";
 import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
-// Middleware to verify session token
-async function verifySession(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("Missing or invalid authorization header");
-  }
-
-  const sessionToken = authHeader.split("Bearer ")[1];
-  return await auth.verifyIdToken(sessionToken);
-}
-
 // Types
 interface NotificationResult {
   recipientId: string;
@@ -37,42 +26,67 @@ interface Activity {
   motionStatus: string;
 }
 
+interface Recipient {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  userId: string;
+  email: string;
+  relationship: string;
+}
+
 // Helper functions
+/**
+ * Determines which users are inactive based on their activity history
+ * @param thresholdMs - Time in milliseconds after which a user is considered inactive
+ * @returns Array of inactive user documents
+ */
 async function getInactiveUsers(thresholdMs: number) {
   const now = Timestamp.now();
   const activitySnapshot = await db.collection("userActivity").get();
+
+  // List of motion statuses that indicate user is active
+  const ACTIVE_MOTION_STATUSES = ["walking", "running", "moving", "unknown"];
+
+  /**
+   * Checks if recent activities show any active motion
+   * @param activities - List of recent user activities
+   * @returns boolean indicating if user has shown recent active motion
+   */
+  const hasRecentActiveMotion = (activities: Activity[]) => {
+    const recentActivities = activities.slice(0, 3);
+    return recentActivities.some((activity: Activity) =>
+      ACTIVE_MOTION_STATUSES.includes(activity.motionStatus?.toLowerCase())
+    );
+  };
 
   return activitySnapshot.docs.filter((doc) => {
     const data = doc.data();
     const activities = data?.activities || [];
     const lastActiveState = data?.lastActiveState;
 
-    // If no activities and no lastActiveState, user is inactive
-    if (activities.length === 0 && !lastActiveState) return true;
-
-    // If we have a lastActiveState, use that to determine inactivity
-    if (lastActiveState) {
-      const lastActiveTime = lastActiveState.timestamp;
-      return now.toMillis() - lastActiveTime.toMillis() > thresholdMs;
+    // Case 1: No activity data at all - user is inactive
+    if (activities.length === 0 && !lastActiveState) {
+      return true;
     }
 
-    // Fallback to checking recent activities (for users without lastActiveState yet)
+    // Case 2: Check lastActiveState if available (preferred method)
+    if (lastActiveState) {
+      const timeSinceLastActive =
+        now.toMillis() - lastActiveState.timestamp.toMillis();
+      return timeSinceLastActive > thresholdMs;
+    }
+
+    // Case 3: Fallback to checking activities array
     const lastActivity = activities[0];
-    const lastActivityTime = lastActivity ? lastActivity.timestamp : null;
+    if (!lastActivity) return true;
 
-    if (
-      !lastActivityTime ||
-      now.toMillis() - lastActivityTime.toMillis() > thresholdMs
-    ) {
-      const recentActivities = activities.slice(0, 3);
-      const activeStatuses = ["walking", "running", "moving"];
+    const timeSinceLastActivity =
+      now.toMillis() - lastActivity.timestamp.toMillis();
 
-      const hasRecentActiveMotion = recentActivities.some(
-        (activity: Activity) =>
-          activeStatuses.includes(activity.motionStatus?.toLowerCase())
-      );
-
-      return !hasRecentActiveMotion;
+    // If time since last activity exceeds threshold, check recent motion patterns
+    if (timeSinceLastActivity > thresholdMs) {
+      return !hasRecentActiveMotion(activities);
     }
 
     return false;
@@ -165,7 +179,10 @@ async function processInactiveUser(
 
   const notifications = await Promise.all(
     recipientsSnapshot.docs.map((doc) => {
-      const recipientData = doc.data();
+      const recipientData: Recipient = {
+        id: doc.id,
+        ...doc.data(),
+      } as Recipient;
       const message = formatInactivityMessage(
         userName,
         timestamp,
