@@ -6,7 +6,13 @@ import { Firestore, Timestamp } from "firebase-admin/firestore";
 export class ActivityService {
   constructor(private readonly db: Firestore) {}
 
-  private parseLocation(locationString: string): LocationDto {
+  private parseLocation(
+    locationString: string | null | undefined
+  ): LocationDto | null {
+    if (!locationString) {
+      return null;
+    }
+
     const [lat, lng] = locationString.split(",").map(Number);
     if (isNaN(lat) || isNaN(lng)) {
       throw new Error("Invalid location format");

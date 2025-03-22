@@ -9,7 +9,7 @@ export const createActivitySchema = z.object({
 });
 
 export const activitySchema = z.object({
-  location: locationSchema,
+  location: locationSchema.nullable(),
   motionStatus: z.nativeEnum(MotionStatus),
   timestamp: z.instanceof(Timestamp),
 });
