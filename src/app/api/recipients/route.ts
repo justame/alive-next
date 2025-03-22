@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     console.log("Recipient data:", data);
 
     // Validate required fields
-    const requiredFields = ["name", "phoneNumber", "email", "relationship"];
+    const requiredFields = ["name", "phoneNumber"];
     const missingFields = requiredFields.filter((field) => !data[field]);
     if (missingFields.length > 0) {
       return NextResponse.json(
@@ -55,6 +55,8 @@ export async function POST(request: Request) {
 
     const recipientData = {
       ...data,
+      email: data.email || "",
+      relationship: data.relationship || "",
       userId: decodedToken.uid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
